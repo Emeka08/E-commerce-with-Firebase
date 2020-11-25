@@ -31,6 +31,7 @@
                   id="exampleInputEmail1"
                   aria-describedby="emailHelp"
                   placeholder="Enter email"
+                  v-model="email"
                 />
                 <small id="emailHelp" class="form-text text-muted"
                   >We'll never share your email with anyone else.</small
@@ -43,6 +44,7 @@
                   class="form-control"
                   id="exampleInputPassword1"
                   placeholder="Enter Password"
+                  v-model="password"
                 />
               </div>
               <div class="form-group">
@@ -78,7 +80,7 @@
                 </p>
               </div>
             </form>
-            <form action="#" v-if="!state" name="registration">
+            <form v-if="!state" name="registration">
               <div class="d-flex justify-content-around">
                 <div>
                   <div class="form-group">
@@ -131,6 +133,7 @@
               </div>
               <div class="col-md-12 text-center mb-3">
                 <button
+                  @click="signUp"
                   type="submit"
                   class="btn btn-block mybtn btn-primary tx-tfm"
                 >
@@ -155,11 +158,15 @@
 </template>
 
 <script>
+import { fb } from '../firebase'
+
 export default {
   data: function () {
     return {
       state: true,
-      formName: 'Login'
+      formName: 'Login',
+      email: null,
+      password: null
     }
   },
   methods: {
@@ -170,6 +177,21 @@ export default {
       } else {
         this.formName = 'Signup'
       }
+    },
+    signUp () {
+      fb.auth().createUserWithEmailAndPassword(this.email, this.password)
+        .then((user) => {
+          this.$router.replace('AdminPage')
+        })
+        .catch(function (error) {
+          let errorCode = error.code
+          let errorMessage = error.errorMessage
+          if (errorCode === 'auth/weak-password') {
+            alert('password is too weak')
+          } else {
+            alert(errorMessage)
+          }
+        })
     }
   }
 }
@@ -177,7 +199,6 @@ export default {
 
 <style scoped>
 .container {
-  height: 85vh;
   flex-direction: column;
 }
 .myform {
@@ -203,7 +224,6 @@ export default {
   border-radius: 50px;
 }
 h1 {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-weight: 500;
   font-size: 1.5rem;
   letter-spacing: 0.2rem;
